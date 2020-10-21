@@ -6,13 +6,15 @@ import (
 
 func (e *Explainer) explain(ctx context.Context) (string, error) {
 	s := `
-Upgrade the Tenant Cluster to the latest major version.
+Check if the Tenant Cluster successfully created.
 
-	* Fetch the Cluster CR.
-	* Set the desired cluster-operator version in the CR labels.
-	* Set the desired release version in the CR labels.
-	* Update the Cluster CR in the Control Plane.
+	* List all Tenant Cluster nodes. Doing so without errors means the apiserver is up.
+	* Check for the "Created" status condition in the AWSCluster CR.
 
+A cluster creation takes up to 30 minutes. This aligns with our cluster creation metric in cluster-operator,
+see https://github.com/giantswarm/cluster-operator/blob/master/service/collector/cluster_transition.go#L135.
+
+More information about cluster transitions: https://intranet.giantswarm.io/docs/monitoring/metrics/cluster-transitions/.
 	`
 
 	return s, nil

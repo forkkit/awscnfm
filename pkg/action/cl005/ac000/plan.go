@@ -16,26 +16,31 @@ var Plan = []plan.Step{
 	},
 	{
 		Action:  "ac002",
+		Backoff: plan.NewBackoff(10*time.Second, 2*time.Second),
+		Comment: "create nodepool CRs",
+	},
+	{
+		Action:  "ac003",
 		Backoff: plan.NewBackoff(30*time.Minute, 3*time.Minute),
 		Comment: "check cluster access",
 	},
 	{
-		Action:  "ac003",
+		Action:  "ac004",
 		Backoff: plan.NewBackoff(10*time.Second, 2*time.Second),
-		Comment: "trigger patch upgrade",
+		Comment: "trigger major upgrade",
 	},
 	{
-		Action:  "ac004",
+		Action:  "ac005",
 		Backoff: plan.NewBackoff(120*time.Minute, 10*time.Minute),
 		Comment: "check upgrade successful",
 	},
 	{
-		Action:  "ac005",
+		Action:  "ac006",
 		Backoff: plan.NewBackoff(10*time.Second, 2*time.Second),
 		Comment: "delete cluster CRs",
 	},
 	{
-		Action:  "ac006",
+		Action:  "ac007",
 		Backoff: plan.NewBackoff(90*time.Minute, 9*time.Minute),
 		Comment: "check CRs deleted",
 	},

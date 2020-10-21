@@ -3,16 +3,14 @@ package ac005
 import (
 	"context"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
-	pkgclient "github.com/giantswarm/awscnfm/v12/pkg/client"
+	"github.com/giantswarm/awscnfm/v12/pkg/client"
 	"github.com/giantswarm/awscnfm/v12/pkg/env"
-	"github.com/giantswarm/awscnfm/v12/pkg/label"
 )
 
 func (e *Executor) execute(ctx context.Context) error {
@@ -20,31 +18,33 @@ func (e *Executor) execute(ctx context.Context) error {
 
 	var cpClients k8sclient.Interface
 	{
-		c := pkgclient.ControlPlaneConfig{
+		c := client.ControlPlaneConfig{
 			Logger: e.logger,
 
 			KubeConfig: env.ControlPlaneKubeConfig(),
 		}
 
-		cpClients, err = pkgclient.NewControlPlane(c)
+		cpClients, err = client.NewControlPlane(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
+	var cl v1alpha2.AWSCluster
 	{
-		err := cpClients.CtrlClient().DeleteAllOf(
+		err = cpClients.CtrlClient().Get(
 			ctx,
-			&apiv1alpha2.Cluster{},
-			client.InNamespace(metav1.NamespaceDefault),
-			client.MatchingLabels{label.Cluster: e.tenantCluster},
+			types.NamespacedName{Name: e.tenantCluster, Namespace: v1.NamespaceDefault},
+			&cl,
 		)
-		if errors.IsNotFound(err) {
-			// fall through
-		} else if err != nil {
+		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	return nil
+	if cl.Status.Cluster.LatestCondition() == v1alpha2.ClusterStatusConditionUpdated {
+		return nil
+	}
+
+	return microerror.Maskf(wrongClusterStatusConditionError, cl.Status.Cluster.LatestCondition())
 }
