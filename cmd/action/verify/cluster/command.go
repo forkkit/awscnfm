@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/cluster/created"
+	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/cluster/customsubnet"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/cluster/deleted"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/cluster/ha"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/cluster/networkpool"
@@ -35,6 +36,18 @@ func New(config Config) (*cobra.Command, error) {
 		}
 
 		createdCmd, err = created.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var customsubnetCmd *cobra.Command
+	{
+		c := customsubnet.Config{
+			Logger: config.Logger,
+		}
+
+		customsubnetCmd, err = customsubnet.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -105,6 +118,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(createdCmd)
+	c.AddCommand(customsubnetCmd)
 	c.AddCommand(deletedCmd)
 	c.AddCommand(haCmd)
 	c.AddCommand(networkpoolCmd)

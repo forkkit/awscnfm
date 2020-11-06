@@ -5,6 +5,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/awscnfm/v12/cmd/action/create/nodepool/customsubnet"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/create/nodepool/defaultdataplane"
 )
 
@@ -36,6 +37,18 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var customsubnetCmd *cobra.Command
+	{
+		c := customsubnet.Config{
+			Logger: config.Logger,
+		}
+
+		customsubnetCmd, err = customsubnet.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -52,6 +65,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(customsubnetCmd)
 	c.AddCommand(defaultdataplaneCmd)
 
 	return c, nil

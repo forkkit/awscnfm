@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/awscnfm/v12/cmd/action/create/cluster/customnetworkpool"
+	"github.com/giantswarm/awscnfm/v12/cmd/action/create/cluster/customsubnet"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/create/cluster/defaultcontrolplane"
 	"github.com/giantswarm/awscnfm/v12/cmd/action/create/cluster/singlecontrolplane"
 )
@@ -33,6 +34,18 @@ func New(config Config) (*cobra.Command, error) {
 		}
 
 		customnetworkpoolCmd, err = customnetworkpool.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var customsubnetCmd *cobra.Command
+	{
+		c := customsubnet.Config{
+			Logger: config.Logger,
+		}
+
+		customsubnetCmd, err = customsubnet.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -79,6 +92,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(customnetworkpoolCmd)
+	c.AddCommand(customsubnetCmd)
 	c.AddCommand(defaultcontrolplaneCmd)
 	c.AddCommand(singlecontrolplaneCmd)
 
