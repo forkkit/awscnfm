@@ -1,6 +1,7 @@
 package verify
 
 import (
+	"github.com/giantswarm/awscnfm/v12/cmd/action/verify/netpol"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -88,6 +89,18 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var netpolComd *cobra.Command
+	{
+		c := netpol.Config{
+			Logger: config.Logger,
+		}
+
+		netpolComd, err = netpol.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -108,6 +121,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(clusterCmd)
 	c.AddCommand(kiamCmd)
 	c.AddCommand(masterCmd)
+	c.AddCommand(netpolComd)
 	c.AddCommand(workerCmd)
 
 	return c, nil
